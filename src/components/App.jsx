@@ -12,7 +12,7 @@ const BASE_URL = 'https://pixabay.com/api/';
 const KEY = '30743258-d8407cc281d6c3ad648c29387';
 
 export const App = () => {
-  const [images, setImages] = useState(null);
+  const [images, setImages] = useState([]);
   const [searchQuery, setsearchQuery] = useState(null);
   const [page, setPage] = useState(1);
   const [error, setError] = useState(null);
@@ -20,13 +20,12 @@ export const App = () => {
 
   useEffect(() => {
     const addImages = loadedImg => {
-      if (!images) {
-        setImages(loadedImg);
-      } else {
-        setImages(prevState => {
-          return [...prevState, ...loadedImg];
-        });
-      }
+      setImages(prevState => {
+        if (prevState.length === 0) {
+          return loadedImg;
+        }
+        return [...prevState, ...loadedImg];
+      });
     };
 
     if (!searchQuery) {
@@ -72,9 +71,16 @@ export const App = () => {
   }, [page, searchQuery]);
 
   const onFormSubmit = userSearchQuery => {
+    if (userSearchQuery.trim() === '') {
+      setError('Please enter keyword');
+      setImages([]);
+      setStatus('rejected');
+      return;
+    }
+
     setsearchQuery(userSearchQuery);
     setPage(1);
-    setImages(null);
+    setImages([]);
   };
 
   const hendleBtnClick = () => {
@@ -88,7 +94,7 @@ export const App = () => {
       <SApp>
         <Searchbar onFormSubmit={onFormSubmit} />
         {status === 'rejected' && <Errormessage text={error} />}
-        {images && <ImageGallery images={images} />}
+        {images.length !== 0 && <ImageGallery images={images} />}
         {status === 'pending' && (
           <Oval
             height={80}
